@@ -35,22 +35,28 @@ const authLimiter = rateLimit({
 app.use('/api/', apiLimiter);
 app.use('/api/auth', authLimiter);
 
-// ── Health Check ──────────────────────────────────────
+// ── Health Check (required for ECS) ───────────────────
 app.get('/health', (req, res) => {
-  res.json({ status: 'healthy', timestamp: new Date().toISOString() });
+  res.json({ status: 'healthy', timestamp: new Date().toISOString(), uptime: process.uptime() });
 });
 
-app.get('/api', (req, res) => {
-  res.json({
-    name: 'SHOPMART API',
-    version: '1.0.0',
-    endpoints: ['/api/auth', '/api/products', '/api/cart', '/api/orders']
-  });
+// ── API Routes ────────────────────────────────────────
+app.use('/api/auth',     require('./routes/auth'));
+app.use('/api/products', require('./routes/products'));
+app.use('/api/cart',     require('./routes/cart'));
+app.use('/api/orders',   require('./routes/orders'));
+
+// ── 404 Handler ───────────────────────────────────────
+app.use((req, res) => {
+  res.status(404).json({ error: `Route ${req.method} ${req.url} not found` });
 });
 
 // ── Global Error Handler ──────────────────────────────
 app.use((err, req, res, next) => {
   console.error('Error:', err.message);
+  if (err.code === 'ER_DUP_ENTRY') {
+    return res.status(409).json({ error: 'Duplicate entry' });
+  }
   const status = err.status || 500;
   res.status(status).json({
     error: process.env.NODE_ENV === 'production' ? 'Something went wrong' : err.message
