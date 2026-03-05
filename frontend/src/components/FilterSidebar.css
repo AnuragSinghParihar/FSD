@@ -1,0 +1,50 @@
+.filter-sidebar {
+  position: sticky;
+  top: 90px;
+  height: fit-content;
+}
+
+.filter-section {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 20px;
+  margin-bottom: 16px;
+}
+
+.filter-title {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 16px;
+  color: var(--text-primary);
+}
+
+.filter-list {
+  list-style: none;
+}
+
+.filter-item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  background: none;
+  transition: var(--transition);
+  margin-bottom: 4px;
+}
+
+.filter-item:hover {
+  background: var(--bg-surface);
+  color: var(--text-primary);
+}
+
+.filter-item.active {
+  background: rgba(108, 92, 231, 0.15);
+  color: var(--primary-light);
+  font-weight: 500;
+}
+
+.price-ranges { display: flex; flex-direction: column; }
