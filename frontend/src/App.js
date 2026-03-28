@@ -11,6 +11,7 @@ import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import Checkout from './pages/Checkout';
 import Dashboard from './pages/Dashboard';
+import NotFoundPage from './pages/NotFoundPage';
 import PrivateRoute from './components/PrivateRoute';
 import './App.css';
 
@@ -31,6 +32,7 @@ function App() {
                 <Route path="checkout" element={<Checkout />} />
                 <Route path="dashboard" element={<Dashboard />} />
               </Route>
+              <Route path="*" element={<NotFoundPage />} />
             </Route>
           </Routes>
         </BrowserRouter>
