@@ -24,13 +24,13 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with: { node-version: '20', cache: 'npm', cache-dependency-path: backend/package-lock.json }
-      - name: Install & Test
+      - name: Install & Test Backend
         working-directory: ./backend
         run: npm ci && npm test -- --passWithNoTests
 
-  # ── Job 2: Build & Deploy Backend ───────────────────
+  # ── Job 2: Deploy Backend ───────────────────────────
   deploy-backend:
-    name: Deploy Backend
+    name: Build → ECR → ECS (Backend)
     needs: test
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
@@ -50,7 +50,7 @@ jobs:
         uses: aws-actions/amazon-ecr-login@v2
 
       - name: Build, tag, push backend
-        id: build-backend
+        id: build
         run: |
           SHORT_SHA=${GITHUB_SHA::8}
           IMAGE=${{ env.ECR_REGISTRY }}/${{ env.BACKEND_REPO }}
@@ -65,12 +65,61 @@ jobs:
         with:
           task-definition: task-def.json
           container-name: backend
-          image: ${{ steps.build-backend.outputs.image }}
+          image: ${{ steps.build.outputs.image }}
 
       - name: Deploy to ECS
         uses: aws-actions/amazon-ecs-deploy-task-definition@v1
         with:
           task-definition: ${{ steps.task-def.outputs.task-definition }}
           service: ${{ env.ECS_BACKEND_SERVICE }}
+          cluster: ${{ env.ECS_CLUSTER }}
+          wait-for-service-stability: true
+
+  # ── Job 3: Deploy Frontend ──────────────────────────
+  deploy-frontend:
+    name: Build → ECR → ECS (Frontend)
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to ECR
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build, tag, push frontend
+        id: build
+        run: |
+          SHORT_SHA=${GITHUB_SHA::8}
+          IMAGE=${{ env.ECR_REGISTRY }}/${{ env.FRONTEND_REPO }}
+          docker build -t $IMAGE:$SHORT_SHA -t $IMAGE:latest \
+            --build-arg REACT_APP_API_URL=${{ secrets.API_URL }} \
+            ./frontend
+          docker push $IMAGE:$SHORT_SHA
+          docker push $IMAGE:latest
+          echo "image=$IMAGE:$SHORT_SHA" >> $GITHUB_OUTPUT
+
+      - name: Render task definition
+        id: task-def
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: task-def-frontend.json
+          container-name: frontend
+          image: ${{ steps.build.outputs.image }}
+
+      - name: Deploy to ECS
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+        with:
+          task-definition: ${{ steps.task-def.outputs.task-definition }}
+          service: ${{ env.ECS_FRONTEND_SERVICE }}
           cluster: ${{ env.ECS_CLUSTER }}
           wait-for-service-stability: true
