@@ -4,11 +4,12 @@
   "requiresCompatibilities": ["FARGATE"],
   "cpu": "512",
   "memory": "1024",
-  "executionRoleArn": "arn:aws:iam::ACCOUNT_ID:role/ecsTaskExecutionRole",
+  "executionRoleArn": "arn:aws:iam::956202003884:role/LabRole",
+  "taskRoleArn": "arn:aws:iam::956202003884:role/LabRole",
   "containerDefinitions": [
     {
       "name": "backend",
-      "image": "ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com/shopmart/backend:latest",
+      "image": "956202003884.dkr.ecr.us-east-1.amazonaws.com/shopmart/backend:latest",
       "essential": true,
       "portMappings": [
         {
@@ -23,11 +24,11 @@
       "secrets": [
         {
           "name": "DB_URL",
-          "valueFrom": "arn:aws:ssm:us-east-1:ACCOUNT_ID:parameter/shopmart/prod/db-url"
+          "valueFrom": "arn:aws:ssm:us-east-1:956202003884:parameter/shopmart/prod/db-url"
         },
         {
           "name": "JWT_SECRET",
-          "valueFrom": "arn:aws:ssm:us-east-1:ACCOUNT_ID:parameter/shopmart/prod/jwt-secret"
+          "valueFrom": "arn:aws:ssm:us-east-1:956202003884:parameter/shopmart/prod/jwt-secret"
         }
       ],
       "healthCheck": {
