@@ -19,12 +19,17 @@
       ],
       "environment": [
         { "name": "NODE_ENV", "value": "production" },
-        { "name": "PORT", "value": "3000" }
+        { "name": "PORT", "value": "3000" },
+        { "name": "DB_HOST", "value": "shopmart-db.cc5goxutxb1z.us-east-1.rds.amazonaws.com" },
+        { "name": "DB_PORT", "value": "3306" },
+        { "name": "DB_NAME", "value": "shopmart" },
+        { "name": "DB_USER", "value": "admin" },
+        { "name": "FRONTEND_URL", "value": "http://52.205.6.44" }
       ],
       "secrets": [
         {
-          "name": "DB_URL",
-          "valueFrom": "arn:aws:ssm:us-east-1:956202003884:parameter/shopmart/prod/db-url"
+          "name": "DB_PASS",
+          "valueFrom": "arn:aws:ssm:us-east-1:956202003884:parameter/shopmart/prod/db-pass"
         },
         {
           "name": "JWT_SECRET",
